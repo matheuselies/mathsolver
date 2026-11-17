@@ -36,3 +36,9 @@ __pycache__/
 *.pyc
 *.db
 .venv/
+
+
+# Environment variables
+.env
+.env.*
+!.env.example
