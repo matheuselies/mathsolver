@@ -1,13 +1,973 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MathSolver</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/start.ts"></script>
-  </body>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MathSolver 1.0 — Matemática resolvida passo a passo</title>
+<meta name="description" content="Plataforma educacional de matemática: tabuada, calculadora, fases, treinamento e ferramentas com resolução passo a passo.">
+<style>
+:root{
+  --bg:#0b1622;--bg2:#0f1d2b;--card:#102131;--line:#1e3346;--text:#e6eef5;--muted:#8aa0b3;
+  --accent:#22d3c5;--accent2:#14b8a6;--ok:#22c55e;--err:#f87171;--warn:#fbbf24;
+  --radius:14px;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);line-height:1.5}
+body{background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:48px 48px;background-attachment:fixed}
+body::before{content:"";position:fixed;inset:0;background:radial-gradient(ellipse at top,transparent 0,var(--bg) 70%);opacity:.9;pointer-events:none;z-index:-1}
+a{color:var(--accent)}
+header{position:sticky;top:0;z-index:10;background:rgba(11,22,34,.92);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+.top{max-width:1200px;margin:auto;display:flex;align-items:center;gap:12px;padding:12px 20px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:20px;text-decoration:none;color:var(--text)}
+.logo span.sig{width:36px;height:36px;border-radius:9px;background:var(--accent);color:#04201d;display:grid;place-items:center;font-size:20px}
+.badge{font-size:11px;border:1px solid var(--line);border-radius:6px;padding:1px 6px;color:var(--muted);font-weight:500}
+.menu-btn{display:none;margin-left:auto}
+.wrap{max-width:1200px;margin:auto;display:grid;grid-template-columns:230px 1fr;gap:28px;padding:28px 20px 60px}
+nav h4{font-size:11px;letter-spacing:.15em;color:var(--muted);margin:6px 12px 10px}
+nav a{display:block;padding:7px 12px;border-radius:8px;color:var(--muted);text-decoration:none;font-size:15px}
+nav a:hover{color:var(--text);background:var(--bg2)}
+nav a.active{color:var(--accent);background:#13283a}
+main{min-width:0}
+.card{background:rgba(16,33,49,.85);border:1px solid var(--line);border-radius:var(--radius);padding:24px;margin-bottom:18px}
+.hero{padding:40px}
+.eyebrow{color:var(--accent);font-size:12px;letter-spacing:.2em;font-weight:600;text-transform:uppercase}
+h1{font-size:clamp(30px,5vw,48px);margin:10px 0;line-height:1.1}
+h1 em{color:var(--accent);font-style:normal}
+h2{margin:0 0 6px;font-size:24px}
+h3{margin:0 0 6px;font-size:17px}
+.muted{color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.tile{display:block;text-decoration:none;color:var(--text);background:rgba(16,33,49,.85);border:1px solid var(--line);border-radius:var(--radius);padding:18px;transition:.15s}
+.tile:hover{border-color:var(--accent);transform:translateY(-2px)}
+.tile p{margin:4px 0 0;color:var(--muted);font-size:14px}
+button,.btn{font:inherit;cursor:pointer;border-radius:9px;border:1px solid var(--line);background:var(--bg2);color:var(--text);padding:9px 16px}
+button:hover{border-color:var(--accent)}
+button.primary,.btn.primary{background:var(--accent);color:#04201d;border-color:var(--accent);font-weight:600}
+button.primary:hover{background:var(--accent2)}
+button:disabled{opacity:.5;cursor:not-allowed}
+input,select{font:inherit;background:#0a1824;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:9px 12px;min-width:0}
+input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+.row>label.f{flex:1 1 130px}
+.result{margin-top:18px;border-left:3px solid var(--accent);background:#0a1824;border-radius:10px;padding:14px 18px}
+.result.err{border-color:var(--err)}
+.result .big{font-size:24px;font-weight:700;color:var(--accent)}
+.result.err .big{color:var(--err)}
+.formula{font-family:ui-monospace,Consolas,monospace;background:#0f2233;border:1px solid var(--line);border-radius:7px;padding:2px 8px;display:inline-block;margin:6px 0}
+ol.steps{margin:8px 0 0;padding-left:22px}
+ol.steps li{margin:3px 0}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-size:13px;border:1px solid var(--line);border-radius:999px;padding:4px 12px;color:var(--muted);text-decoration:none;background:var(--bg2)}
+.chip:hover{color:var(--text);border-color:var(--accent)}
+label.chk{display:flex;gap:8px;align-items:center;font-size:14px;padding:6px 10px;border:1px solid var(--line);border-radius:9px;background:#0a1824;cursor:pointer}
+label.chk input{accent-color:var(--accent)}
+.chkgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+table{border-collapse:collapse;width:100%}
+td,th{border:1px solid var(--line);padding:6px 4px;text-align:center;font-variant-numeric:tabular-nums}
+th{color:var(--accent);background:#0f2233}
+td.hl{background:#13403c;color:#fff;font-weight:700}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.tabs button.on{border-color:var(--accent);color:var(--accent)}
+.prompt{font-size:clamp(22px,4vw,32px);font-weight:700;margin:12px 0;text-align:center}
+.bar{height:10px;background:#0a1824;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.bar>div{height:100%;background:var(--accent);transition:width .3s}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:14px 0}
+.stat{background:#0a1824;border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center}
+.stat b{display:block;font-size:22px;color:var(--accent)}
+.stat span{font-size:12px;color:var(--muted)}
+.ok{color:var(--ok)}.bad{color:var(--err)}
+details{border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:10px;background:#0a1824}
+details summary{cursor:pointer;font-weight:600}
+.fl{display:grid;grid-template-columns:1fr auto;gap:6px 16px;margin-top:10px;font-size:14px}
+.fl code{font-family:ui-monospace,Consolas,monospace;color:var(--accent)}
+.phases{display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:6px;margin-top:10px}
+.ph{aspect-ratio:1;display:grid;place-items:center;border-radius:8px;border:1px solid var(--line);font-size:13px;background:#0a1824;color:var(--muted)}
+.ph.done{background:#13403c;color:#fff;border-color:var(--accent2)}
+.ph.cur{border-color:var(--accent);color:var(--accent);font-weight:700}
+footer{text-align:center;color:var(--muted);font-size:13px;padding:24px;border-top:1px solid var(--line)}
+@media (max-width:820px){
+  .wrap{grid-template-columns:1fr}
+  nav{display:none}
+  nav.open{display:block;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:10px}
+  .menu-btn{display:inline-block}
+  .hero{padding:24px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <a class="logo" href="#inicio"><span class="sig">∑</span>MathSolver <span class="badge">v1.0</span></a>
+    <button class="menu-btn" id="menuBtn" aria-label="Abrir menu">☰ Menu</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav id="nav" aria-label="Temas"></nav>
+  <main id="app"></main>
+</div>
+
+<footer>MathSolver 1.0 · Matemática para todas as idades · Funciona offline, direto no navegador.</footer>
+
+<script>
+"use strict";
+/* =====================================================================
+   UTILITÁRIOS
+   ===================================================================== */
+const app = document.getElementById("app");
+const nav = document.getElementById("nav");
+const randInt = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
+const pick = arr => arr[randInt(0, arr.length - 1)];
+const gcd = (a, b) => { a = Math.abs(a); b = Math.abs(b); while (b) [a, b] = [b, a % b]; return a; };
+const lcm = (a, b) => (a && b) ? Math.abs(a * b) / gcd(a, b) : 0;
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt = n => {
+  if (typeof n !== "number") return String(n);
+  if (!isFinite(n)) return isNaN(n) ? "indefinido" : (n > 0 ? "∞" : "−∞");
+  const r = Math.round(n * 1e6) / 1e6;
+  return (Object.is(r, -0) ? 0 : r).toLocaleString("pt-BR", { maximumFractionDigits: 6 });
+};
+const num = v => {
+  if (v === undefined || v === null) return NaN;
+  const s = String(v).trim().replace(/\s/g, "").replace(",", ".");
+  if (s === "") return NaN;
+  return Number(s);
+};
+const isInt = n => Number.isInteger(n);
+const deg = r => r * 180 / Math.PI;
+const rad = d => d * Math.PI / 180;
+
+function store(key, val) {
+  try {
+    if (val === undefined) return JSON.parse(localStorage.getItem(key) || "null");
+    localStorage.setItem(key, JSON.stringify(val));
+  } catch (e) { return null; }
+}
+
+/* Mostra o resultado de uma ferramenta: {result, formula, steps} ou {error} */
+function showResult(box, r) {
+  if (!r) { box.innerHTML = ""; return; }
+  if (r.error) { box.innerHTML = `<div class="result err"><div class="big">${esc(r.error)}</div></div>`; return; }
+  box.innerHTML = `<div class="result">
+    <div class="muted" style="font-size:13px">Resultado</div>
+    <div class="big">${r.result}</div>
+    ${r.formula ? `<div>Fórmula: <span class="formula">${r.formula}</span></div>` : ""}
+    ${r.steps && r.steps.length ? `<div class="muted" style="margin-top:6px;font-size:13px">Passo a passo</div><ol class="steps">${r.steps.map(s => `<li>${s}</li>`).join("")}</ol>` : ""}
+  </div>`;
+}
+
+/* Ferramenta genérica com várias "figuras/operações" e campos dinâmicos */
+function multiTool(title, desc, options) {
+  const keys = Object.keys(options);
+  app.innerHTML = `<div class="card"><h2>${title}</h2><p class="muted">${desc}</p>
+    <div class="tabs" id="tabs">${keys.map((k, i) => `<button data-k="${k}" class="${i ? "" : "on"}">${options[k].label}</button>`).join("")}</div>
+    <form id="form"></form><div id="out"></div></div>`;
+  const form = app.querySelector("#form"), out = app.querySelector("#out");
+  let cur = keys[0];
+  const render = () => {
+    const o = options[cur];
+    form.innerHTML = `<div class="row">${o.fields.map(([id, lab, ph]) =>
+      `<label class="f">${lab}<input name="${id}" inputmode="decimal" placeholder="${ph ?? ""}" autocomplete="off"></label>`).join("")}
+      <button class="primary" type="submit">Calcular</button></div>`;
+    out.innerHTML = "";
+  };
+  form.addEventListener("submit", e => {
+    e.preventDefault();
+    const o = options[cur], v = {};
+    for (const [id, lab] of o.fields) {
+      v[id] = num(form.elements[id].value);
+      if (isNaN(v[id])) return showResult(out, { error: `Preencha "${lab}" com um número.` });
+    }
+    try { showResult(out, o.calc(v)); } catch (err) { showResult(out, { error: err.message }); }
+  });
+  app.querySelector("#tabs").addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    app.querySelectorAll("#tabs button").forEach(x => x.classList.toggle("on", x === b));
+    cur = b.dataset.k; render();
+  });
+  render();
+}
+
+/* =====================================================================
+   FRAÇÕES
+   ===================================================================== */
+function simplify(n, d) {
+  if (d === 0) throw new Error("Denominador não pode ser zero.");
+  if (d < 0) { n = -n; d = -d; }
+  const g = gcd(n, d) || 1;
+  return { n: n / g, d: d / g, g };
+}
+const fracStr = f => f.d === 1 ? String(f.n) : `${f.n}/${f.d}`;
+function parseAnswerValue(s) {
+  s = String(s).trim().replace(/\s/g, "").replace(/^x=/i, "").replace(",", ".");
+  if (s === "") return NaN;
+  if (s.includes("/")) {
+    const [a, b] = s.split("/").map(Number);
+    if (!isFinite(a) || !isFinite(b) || b === 0) return NaN;
+    return a / b;
+  }
+  return Number(s);
+}
+function decimalToFraction(x) {
+  const s = String(x);
+  const dec = s.includes(".") ? s.split(".")[1].length : 0;
+  const den = 10 ** Math.min(dec, 9);
+  return simplify(Math.round(x * den), den);
+}
+
+/* =====================================================================
+   CURRÍCULO (50 fases) — mesmo do site original
+   ===================================================================== */
+const TOPICS = {
+  soma:          { label: "Soma", kind: "inteiro", max: 4 },
+  subtracao:     { label: "Subtração", kind: "inteiro", max: 4 },
+  multiplicacao: { label: "Multiplicação", kind: "inteiro", max: 5 },
+  divisao:       { label: "Divisão exata", kind: "inteiro", max: 4 },
+  potencia:      { label: "Potenciação", kind: "inteiro", max: 4 },
+  raiz:          { label: "Raiz quadrada", kind: "inteiro", max: 3 },
+  fracao:        { label: "Frações (soma e subtração)", kind: "fracao", max: 5 },
+  porcentagem:   { label: "Porcentagem", kind: "inteiro", max: 4 },
+  inteiros:      { label: "Números inteiros (sinais)", kind: "inteiro", max: 4 },
+  mdc:           { label: "MDC", kind: "inteiro", max: 3 },
+  mmc:           { label: "MMC", kind: "inteiro", max: 3 },
+  equacao:       { label: "Equação do 1º grau", kind: "inteiro", max: 5 },
+  area_retangulo:{ label: "Área do retângulo", kind: "inteiro", max: 3 },
+  area_triangulo:{ label: "Área do triângulo", kind: "inteiro", max: 3 },
+  area_desafio:  { label: "Área (desafio)", kind: "inteiro", max: 2 },
+  trigonometria: { label: "Trigonometria (ângulos notáveis)", kind: "decimal", max: 2 },
+};
+const CURRICULUM = (() => {
+  const spec = [["soma",[1,2,3,4]],["subtracao",[1,2,3,4]],["multiplicacao",[1,2,3,4,5]],["divisao",[1,2,3,4]],
+    ["potencia",[1,2,3,4]],["raiz",[1,2,3]],["fracao",[1,2,3,4,5]],["porcentagem",[1,2,3,4]],["inteiros",[1,2,3,4]],
+    ["mdc",[1]],["mmc",[1,2]],["equacao",[1,2,3,4,5]],["area_retangulo",[1]],["area_triangulo",[1]],["area_desafio",[2]],["trigonometria",[1,2]]];
+  const out = []; let p = 1;
+  for (const [topic, ds] of spec) for (const d of ds) out.push({ phase: p++, topic, difficulty: d });
+  return out;
+})();
+const TOTAL_PHASES = CURRICULUM.length; // 50
+const STREAK_TARGET = 10;
+const phaseLabel = p => { const s = CURRICULUM[p - 1]; return `${TOPICS[s.topic].label} · nível ${s.difficulty}`; };
+
+/* ---------- Geração de exercícios ---------- */
+function generate(topic, difficulty) {
+  const d = Math.max(1, Math.min(difficulty, TOPICS[topic].max));
+  const R = table => table[Math.min(d, table.length) - 1];
+  const w = (params, prompt) => ({ topic, difficulty: d, params, prompt, kind: TOPICS[topic].kind });
+  switch (topic) {
+    case "soma": { const [lo, hi] = R([[1,10],[10,60],[50,300],[200,1500]]); const a = randInt(lo,hi), b = randInt(lo,hi); return w([a,b], `${a} + ${b} = ?`); }
+    case "subtracao": { const [lo, hi] = R([[2,10],[10,60],[50,300],[200,1500]]); const a = randInt(lo+1,hi), b = randInt(lo,a); return w([a,b], `${a} − ${b} = ?`); }
+    case "multiplicacao": { const [la,ha,lb,hb] = R([[1,10,1,10],[2,12,2,12],[11,99,2,9],[11,99,11,99],[100,999,11,99]]); const a = randInt(la,ha), b = randInt(lb,hb); return w([a,b], `${a} × ${b} = ?`); }
+    case "divisao": { const [ld,hd,lq,hq] = R([[2,5,1,10],[2,10,2,12],[3,12,10,30],[11,40,10,50]]); const dv = randInt(ld,hd), q = randInt(lq,hq); return w([dv*q,dv], `${dv*q} ÷ ${dv} = ?`); }
+    case "potencia": { const [lb,hb,ln,hn] = R([[2,5,2,2],[2,9,2,3],[2,7,3,4],[2,12,2,5]]); const a = randInt(lb,hb), n = randInt(ln,hn); return w([a,n], `${a}<sup>${n}</sup> = ?`); }
+    case "raiz": { const [lo,hi] = R([[2,10],[5,20],[15,40]]); const r = randInt(lo,hi); return w([r*r], `√${r*r} = ?`); }
+    case "fracao": {
+      const hi = [4,6,9,12,15][d-1];
+      let d1 = randInt(2,hi), d2 = randInt(2,hi), n1 = randInt(1,d1*2), n2 = randInt(1,d2*2);
+      const sub = d >= 2 && randInt(0,1) === 1;
+      if (sub && n1*d2 < n2*d1) { [n1,d1,n2,d2] = [n2,d2,n1,d1]; }
+      return w([n1,d1,n2,d2,sub?1:0], `${n1}/${d1} ${sub?"−":"+"} ${n2}/${d2} = ?`);
+    }
+    case "porcentagem": {
+      const p = pick([[10,50,25],[10,20,25,50,5],[5,15,30,40,60,75],[12,35,45,65,85,120]][d-1]);
+      const step = 100 / (gcd(p,100) || 1);
+      const total = step * randInt(1, [4,8,12,20][d-1]);
+      return w([p,total], `${p}% de ${total} = ?`);
+    }
+    case "inteiros": {
+      const hi = [9,20,60,200][d-1];
+      const a = randInt(-hi,hi) || hi, b = randInt(-hi,hi) || -hi, sub = randInt(0,1);
+      return w([a,b,sub], `${a} ${sub?"−":"+"} ${b<0?`(${b})`:b} = ?`);
+    }
+    case "mdc": { const a = randInt(8,90), b = randInt(8,90); return w([a,b], `MDC(${a}, ${b}) = ?`); }
+    case "mmc": { const hi = d >= 2 ? 30 : 15; const a = randInt(2,hi), b = randInt(2,hi); return w([a,b], `MMC(${a}, ${b}) = ?`); }
+    case "equacao": {
+      const [ha,hx,hb] = R([[5,5,10],[9,9,20],[12,12,40],[15,20,80],[25,30,150]]);
+      const a = randInt(2,ha), x = randInt(-hx,hx) || 3, b = randInt(-hb,hb), c = a*x + b;
+      return w([a,b,c], `${a}x ${b<0?`− ${-b}`:`+ ${b}`} = ${c}<br><span class="muted" style="font-size:16px">Qual é o valor de x?</span>`);
+    }
+    case "area_retangulo": { const b = randInt(2,20), h = randInt(2,20); return w([b,h], `Retângulo com base ${b} cm e altura ${h} cm.<br><span class="muted" style="font-size:16px">Qual é a área (cm²)?</span>`); }
+    case "area_triangulo": { const b = randInt(2,20); let h = randInt(2,20); if ((b*h) % 2) h++; return w([b,h], `Triângulo com base ${b} cm e altura ${h} cm.<br><span class="muted" style="font-size:16px">Qual é a área (cm²)?</span>`); }
+    case "area_desafio": {
+      const tri = randInt(0,1); const b = randInt(20,120); let h = randInt(20,120); if (tri && (b*h) % 2) h++;
+      return w([b,h,tri], `Desafio: ${tri?"triângulo":"retângulo"} com base ${b} cm e altura ${h} cm.<br><span class="muted" style="font-size:16px">Qual é a área (cm²)?</span>`);
+    }
+    case "trigonometria": {
+      const fns = ["sen","cos","tan"], angles = d === 1 ? [30,45,60] : [0,30,45,60,90];
+      const f = randInt(0,2); let a = pick(angles);
+      while (f === 2 && a === 90) a = pick(angles);
+      return w([f,a], `${fns[f]}(${a}°) = ?<br><span class="muted" style="font-size:16px">Responda em decimal (ex.: 0,5)</span>`);
+    }
+  }
+}
+
+const TRIG = {
+  0:  [["0",0],["1",1],["0",0]],
+  30: [["1/2",.5],["√3/2",Math.sqrt(3)/2],["√3/3",Math.sqrt(3)/3]],
+  45: [["√2/2",Math.SQRT2/2],["√2/2",Math.SQRT2/2],["1",1]],
+  60: [["√3/2",Math.sqrt(3)/2],["1/2",.5],["√3",Math.sqrt(3)]],
+  90: [["1",1],["0",0],["não existe",NaN]],
+};
+
+/* ---------- Resolução com passo a passo ---------- */
+function solve(topic, p) {
+  const [a, b, c, e, f] = p;
+  switch (topic) {
+    case "soma": return { value: a+b, answer: a+b, formula: "total = a + b", steps: [`Juntamos as duas quantidades: ${a} + ${b}.`, `${a} + ${b} = ${a+b}.`] };
+    case "subtracao": return { value: a-b, answer: a-b, formula: "diferença = a − b", steps: [`Tiramos ${b} de ${a}.`, `${a} − ${b} = ${a-b}.`] };
+    case "multiplicacao": return { value: a*b, answer: a*b, formula: "produto = a × b", steps: [`Multiplicar é somar ${a} repetido ${b} vezes.`, `${a} × ${b} = ${a*b}.`] };
+    case "divisao": return { value: a/b, answer: a/b, formula: "quociente = dividendo ÷ divisor", steps: [`Procuramos o número que multiplicado por ${b} dá ${a}.`, `${b} × ${a/b} = ${a}, logo ${a} ÷ ${b} = ${a/b}.`] };
+    case "potencia": return { value: a**b, answer: a**b, formula: "aⁿ = a × a × … (n vezes)", steps: [`Atenção: aⁿ NÃO é a × n. É a multiplicado por ele mesmo n vezes.`, `${Array(b).fill(a).join(" × ")} = ${a**b}.`] };
+    case "raiz": { const r = Math.round(Math.sqrt(a)); return { value: r, answer: r, formula: "√n = b ⟺ b² = n", steps: [`Procuramos b tal que b² = ${a}.`, `${r}² = ${r*r}, logo √${a} = ${r}.`] }; }
+    case "fracao": {
+      const n1 = a, d1 = b, n2 = c, d2 = e, sub = f === 1;
+      const den = d1*d2, nn = sub ? n1*d2 - n2*d1 : n1*d2 + n2*d1, s = simplify(nn, den);
+      return { value: s.n/s.d, answer: fracStr(s), formula: sub ? "a/b − c/d = (a·d − c·b) / (b·d)" : "a/b + c/d = (a·d + c·b) / (b·d)",
+        steps: [`Denominador comum: ${d1} × ${d2} = ${den}.`, `Numeradores: ${n1}×${d2} ${sub?"−":"+"} ${n2}×${d1} = ${nn}.`, `Fica ${nn}/${den}${s.g > 1 ? `, que simplificado (÷${s.g}) dá ${fracStr(s)}` : ""}.`] };
+    }
+    case "porcentagem": { const r = a/100*b; return { value: r, answer: fmt(r), formula: "x% de y = (x ÷ 100) × y", steps: [`${a}% significa ${a} em cada 100.`, `(${a} ÷ 100) × ${b} = ${fmt(a/100)} × ${b} = ${fmt(r)}.`] }; }
+    case "inteiros": {
+      const sub = c === 1, r = sub ? a-b : a+b, bt = b<0 ? `(${b})` : b;
+      const ob = sub ? -b : b;
+      const rule = Math.sign(a) === Math.sign(ob) ? "Sinais iguais: somamos os valores absolutos e mantemos o sinal." : "Sinais diferentes: subtraímos os valores absolutos e fica o sinal do maior.";
+      return { value: r, answer: r, formula: sub ? "a − b = a + (−b)" : "regra de sinais da adição",
+        steps: sub ? [`Subtrair é somar o oposto: ${a} − ${bt} = ${a} + (${-b}).`, rule, `Resultado: ${r}.`] : [rule, `${a} + ${bt} = ${r}.`] };
+    }
+    case "mdc": {
+      let x = a, y = b; const steps = ["Algoritmo de Euclides: MDC(a, b) = MDC(b, resto de a ÷ b)."];
+      while (y) { steps.push(`${x} ÷ ${y} → resto ${x % y}; então MDC(${x}, ${y}) = MDC(${y}, ${x % y}).`); [x, y] = [y, x % y]; }
+      steps.push(`Resto 0: o MDC é ${x}.`);
+      return { value: x, answer: x, formula: "MDC(a, b) = MDC(b, a mod b)", steps };
+    }
+    case "mmc": { const g = gcd(a,b), m = a*b/g; return { value: m, answer: m, formula: "MMC(a, b) = (a × b) ÷ MDC(a, b)", steps: [`MDC(${a}, ${b}) = ${g}.`, `MMC = (${a} × ${b}) ÷ ${g} = ${a*b} ÷ ${g} = ${m}.`] }; }
+    case "equacao": { const x = (c-b)/a; return { value: x, answer: x, formula: "ax + b = c → x = (c − b) ÷ a",
+      steps: [`Passamos o ${b} para o outro lado trocando o sinal: ${a}x = ${c} − (${b}) = ${c-b}.`, `Dividimos por ${a}: x = ${c-b} ÷ ${a} = ${x}.`, `Verificação: ${a} × ${x} + (${b}) = ${c}. ✔`] }; }
+    case "area_retangulo": return { value: a*b, answer: a*b, formula: "A = base × altura", steps: [`A = ${a} × ${b} = ${a*b} cm².`] };
+    case "area_triangulo": return { value: a*b/2, answer: a*b/2, formula: "A = (base × altura) ÷ 2", steps: [`Base × altura = ${a} × ${b} = ${a*b}.`, `Dividimos por 2: ${a*b} ÷ 2 = ${a*b/2} cm².`] };
+    case "area_desafio": return c === 1 ? solve("area_triangulo", [a,b]) : solve("area_retangulo", [a,b]);
+    case "trigonometria": {
+      const name = ["sen","cos","tan"][a], [exact, v] = TRIG[b][a];
+      return { value: v, answer: `${exact} ≈ ${fmt(Number(v.toFixed(4)))}`, formula: "tabela dos ângulos notáveis",
+        steps: [`Pela tabela, ${name}(${b}°) = ${exact}.`, `Em decimal: ≈ ${fmt(Number(v.toFixed(4)))}.`] };
+    }
+  }
+}
+
+function checkAnswer(ex, input) {
+  const sol = solve(ex.topic, ex.params);
+  const v = parseAnswerValue(input);
+  if (isNaN(v)) return { valid: false, sol };
+  const tol = ex.kind === "decimal" ? 0.011 : 1e-9;
+  return { valid: true, correct: Math.abs(v - sol.value) <= tol, sol };
+}
+
+/* =====================================================================
+   PÁGINAS
+   ===================================================================== */
+const PAGES = [
+  ["inicio", "Início"], ["tabuada", "Tabuada"], ["calculadora", "Calculadora"], ["fases", "Fases (jogo)"],
+  ["treinamento", "Treinamento"], ["exercicios", "Exercícios"], ["potencias", "Potências e raízes"],
+  ["porcentagem", "Porcentagem"], ["fracoes", "Frações"], ["mdcmmc", "MDC e MMC"], ["inteiros", "Números inteiros"],
+  ["algebra", "Álgebra"], ["geoplana", "Geometria plana"], ["geoespacial", "Geometria espacial"],
+  ["trigonometria", "Trigonometria"], ["formulario", "Formulário"],
+];
+
+const pages = {};
+
+pages.inicio = () => {
+  const tiles = [
+    ["fases","50 fases com progresso","10 acertos seguidos por fase, checkpoint garantido."],
+    ["treinamento","Treinamento livre","Qualquer tema, tentativas ilimitadas."],
+    ["tabuada","Tabuada interativa","Multiplicação de 1 a 10 em tabela."],
+    ["calculadora","Calculadora","Expressões com a ordem das operações explicada."],
+    ["exercicios","Exercícios","Problemas aleatórios com correção imediata."],
+    ["fracoes","Frações","Operar e simplificar com todos os passos."],
+    ["algebra","Álgebra","Equações do 1º e 2º grau e sistemas."],
+    ["geoplana","Geometria","Áreas, perímetros, volumes e Pitágoras."],
+    ["trigonometria","Trigonometria","Razões, leis dos senos e dos cossenos."],
+  ];
+  app.innerHTML = `
+  <div class="card hero">
+    <div class="eyebrow">Versão 1.0 · Matemática para todas as idades</div>
+    <h1>Matemática resolvida<br><em>passo a passo.</em></h1>
+    <p class="muted" style="max-width:640px;font-size:17px">Da tabuada à trigonometria: ferramentas de cálculo que mostram a fórmula usada e cada passo da resolução, um jogo com 50 fases e um formulário completo para consultar.</p>
+    <div class="row" style="margin-top:18px"><a class="btn primary" href="#calculadora" style="text-decoration:none">Abrir calculadora</a><a class="btn" href="#fases" style="text-decoration:none">Jogar as fases</a></div>
+  </div>
+  <div class="grid">${tiles.map(([h,t,p]) => `<a class="tile" href="#${h}"><h3>${t}</h3><p>${p}</p></a>`).join("")}</div>
+  <div class="card" style="margin-top:18px"><h3>Todos os temas</h3><div class="chips" style="margin-top:10px">${PAGES.slice(1).map(([h,t]) => `<a class="chip" href="#${h}">${t}</a>`).join("")}</div></div>`;
+};
+
+/* ---------- Tabuada ---------- */
+pages.tabuada = () => {
+  app.innerHTML = `<div class="card"><h2>Tabuada</h2><p class="muted">Clique em uma célula para ver a conta. Escolha um número para ver a tabuada dele.</p>
+    <div class="row"><label class="f">Tabuada do<input id="tn" type="number" value="7" min="0"></label><label class="f">Até<input id="tm" type="number" value="10" min="1" max="100"></label></div>
+    <div id="tlist" class="result"></div>
+    <div style="overflow-x:auto;margin-top:18px"><table id="tt"></table></div></div>`;
+  const tn = app.querySelector("#tn"), tm = app.querySelector("#tm"), list = app.querySelector("#tlist"), tt = app.querySelector("#tt");
+  const draw = () => {
+    const n = num(tn.value), m = Math.min(100, Math.max(1, Math.trunc(num(tm.value)) || 10));
+    if (isNaN(n)) { list.innerHTML = "Digite um número."; return; }
+    list.innerHTML = `<div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:4px">${Array.from({length: m}, (_, i) => `<div>${fmt(n)} × ${i+1} = <b class="ok">${fmt(n*(i+1))}</b></div>`).join("")}</div>`;
+    let h = "<tr><th>×</th>" + Array.from({length:10},(_,i)=>`<th>${i+1}</th>`).join("") + "</tr>";
+    for (let i = 1; i <= 10; i++) h += `<tr><th>${i}</th>` + Array.from({length:10},(_,j)=>`<td data-a="${i}" data-b="${j+1}" class="${(i===n||j+1===n)?"hl":""}" style="cursor:pointer">${i*(j+1)}</td>`).join("") + "</tr>";
+    tt.innerHTML = h;
+  };
+  tt.addEventListener("click", e => { const td = e.target.closest("td"); if (td) { tn.value = td.dataset.a; draw(); list.insertAdjacentHTML("afterbegin", `<p class="big" style="font-size:20px;margin:0 0 8px">${td.dataset.a} × ${td.dataset.b} = <span style="color:var(--accent)">${td.dataset.a*td.dataset.b}</span></p>`); } });
+  tn.oninput = tm.oninput = draw; draw();
+};
+
+/* ---------- Calculadora (parser seguro, sem eval) ---------- */
+function evaluateExpression(src) {
+  const s = src.replace(/\s+/g, "").replace(/×|x|X|\*/g, "*").replace(/÷|:/g, "/").replace(/−/g, "-").replace(/,/g, ".");
+  if (!s) throw new Error("Digite uma expressão.");
+  let i = 0; const steps = [];
+  const peek = () => s[i];
+  const expect = ch => { if (s[i] !== ch) throw new Error(`Esperava "${ch}" na posição ${i + 1}.`); i++; };
+  const rec = (a, op, b, r) => { steps.push(`${fmt(a)} ${op} ${fmt(b)} = ${fmt(r)}`); return r; };
+  function expr() {
+    let v = term();
+    while (peek() === "+" || peek() === "-") { const op = s[i++]; const r = term(); v = op === "+" ? rec(v, "+", r, v + r) : rec(v, "−", r, v - r); }
+    return v;
+  }
+  function term() {
+    let v = unary();
+    while (peek() === "*" || peek() === "/") {
+      const op = s[i++]; const r = unary();
+      if (op === "/" && r === 0) throw new Error("Divisão por zero não existe.");
+      v = op === "*" ? rec(v, "×", r, v * r) : rec(v, "÷", r, v / r);
+    }
+    return v;
+  }
+  function unary() {
+    if (peek() === "-") { i++; const v = unary(); return -v; }
+    if (peek() === "+") { i++; return unary(); }
+    return power();
+  }
+  function power() {
+    let v = postfix();
+    if (peek() === "^") { i++; const e = unary(); const r = v ** e; if (isNaN(r)) throw new Error("Potência indefinida (base negativa com expoente fracionário)."); v = rec(v, "^", e, r); }
+    return v;
+  }
+  function postfix() {
+    let v = primary();
+    while (peek() === "%" || peek() === "!") {
+      if (s[i++] === "%") { const r = v / 100; steps.push(`${fmt(v)}% = ${fmt(r)}`); v = r; }
+      else { if (!isInt(v) || v < 0 || v > 170) throw new Error("Fatorial só de inteiros entre 0 e 170."); let r = 1; for (let k = 2; k <= v; k++) r *= k; steps.push(`${v}! = ${fmt(r)}`); v = r; }
+    }
+    return v;
+  }
+  function primary() {
+    if (peek() === "(") { i++; const v = expr(); expect(")"); return v; }
+    if (peek() === "√") { i++; const v = postfixArg(); if (v < 0) throw new Error("Não existe raiz quadrada real de número negativo."); const r = Math.sqrt(v); steps.push(`√${fmt(v)} = ${fmt(r)}`); return r; }
+    if (s.startsWith("pi", i) || peek() === "π") { i += peek() === "π" ? 1 : 2; return Math.PI; }
+    const m = /^\d*\.?\d+(e[+-]?\d+)?/i.exec(s.slice(i)) || /^\d+\.?/.exec(s.slice(i));
+    if (!m) throw new Error(peek() === undefined ? "Expressão incompleta." : `Símbolo inválido: "${peek()}".`);
+    i += m[0].length; return Number(m[0]);
+  }
+  function postfixArg() { return peek() === "(" ? primary() : power(); }
+  const v = expr();
+  if (i < s.length) throw new Error(`Símbolo inesperado: "${s[i]}".`);
+  return { value: v, steps };
+}
+pages.calculadora = () => {
+  app.innerHTML = `<div class="card"><h2>Calculadora</h2>
+    <p class="muted">Digite uma expressão. Aceita <span class="formula">+ − × ÷ ^ ( ) √ % !</span> e π. A ordem das operações é mostrada passo a passo.</p>
+    <form id="cf" class="row"><label class="f" style="flex:3 1 260px">Expressão<input id="ce" placeholder="Ex.: 2 + 3 × (4 − 1)^2" autocomplete="off"></label><button class="primary">Calcular</button></form>
+    <div class="chips" style="margin-top:12px" id="keys">${["7","8","9","÷","(",")","4","5","6","×","^","√","1","2","3","−","%","π","0",",","+","!","⌫","C"].map(k=>`<button type="button" class="chip" style="min-width:44px">${k}</button>`).join("")}</div>
+    <div id="co"></div>
+    <div class="result" style="border-color:var(--line)"><b>Ordem das operações:</b> parênteses → potências e raízes → multiplicação e divisão → adição e subtração (da esquerda para a direita).</div></div>`;
+  const inp = app.querySelector("#ce"), out = app.querySelector("#co");
+  app.querySelector("#keys").addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return; const k = b.textContent;
+    if (k === "C") inp.value = ""; else if (k === "⌫") inp.value = inp.value.slice(0, -1); else inp.value += k;
+    inp.focus();
+  });
+  app.querySelector("#cf").addEventListener("submit", e => {
+    e.preventDefault();
+    try {
+      const r = evaluateExpression(inp.value);
+      const st = r.steps.length ? r.steps : ["Não há operações a fazer."];
+      showResult(out, { result: fmt(r.value), steps: st });
+    } catch (err) { showResult(out, { error: err.message }); }
+  });
+};
+
+/* ---------- Jogo: área de exercício reutilizável ---------- */
+function exerciseBox(container, nextExercise, onAnswer) {
+  let ex = null;
+  container.innerHTML = `<div class="prompt" id="xp"></div>
+    <form id="xf" class="row" style="justify-content:center"><input id="xa" autocomplete="off" inputmode="decimal" placeholder="Sua resposta" style="max-width:220px;font-size:18px;text-align:center"><button class="primary">Responder</button></form>
+    <p class="muted" id="xh" style="text-align:center;font-size:13px"></p><div id="xo"></div>`;
+  const xp = container.querySelector("#xp"), xa = container.querySelector("#xa"), xo = container.querySelector("#xo"), xh = container.querySelector("#xh"), xf = container.querySelector("#xf");
+  let answered = false;
+  const load = () => {
+    ex = nextExercise(); answered = false;
+    xp.innerHTML = ex.prompt; xa.value = ""; xo.innerHTML = "";
+    xh.textContent = ex.kind === "fracao" ? "Responda como fração (ex.: 3/4) ou número inteiro." : ex.kind === "decimal" ? "Responda em decimal (ex.: 0,5)." : "Responda com um número.";
+    xf.querySelector("button").textContent = "Responder";
+    xa.focus();
+  };
+  xf.addEventListener("submit", e => {
+    e.preventDefault();
+    if (answered) return load();
+    const r = checkAnswer(ex, xa.value);
+    if (!r.valid) { xo.innerHTML = `<div class="result err">Digite um número válido.</div>`; return; }
+    answered = true;
+    const extra = onAnswer ? onAnswer(r.correct) : "";
+    xo.innerHTML = `<div class="result ${r.correct ? "" : "err"}">
+      <div class="big">${r.correct ? "✔ Correto!" : "✘ Não foi dessa vez"}</div>
+      ${r.correct ? "" : `<div>Resposta certa: <b>${r.sol.answer}</b></div>`}
+      <div>Fórmula: <span class="formula">${r.sol.formula}</span></div>
+      <ol class="steps">${r.sol.steps.map(s => `<li>${s}</li>`).join("")}</ol>${extra || ""}</div>`;
+    xf.querySelector("button").textContent = "Próximo →";
+    xf.querySelector("button").focus();
+  });
+  load();
+  return { reload: load };
+}
+
+/* ---------- Fases (com perfis salvos no navegador + Personalizar) ---------- */
+const PLAYERS_KEY = "mathsolver_players", CURRENT_KEY = "mathsolver_current";
+const getPlayers = () => store(PLAYERS_KEY) || {};
+const savePlayer = p => { const all = getPlayers(); all[p.nickname.toLowerCase()] = p; store(PLAYERS_KEY, all); };
+
+pages.fases = () => {
+  const curKey = store(CURRENT_KEY);
+  const player = curKey ? getPlayers()[curKey] : null;
+  if (!player) return phaseLogin();
+  phaseGame(player);
+};
+
+function phaseLogin() {
+  const all = Object.values(getPlayers());
+  app.innerHTML = `<div class="card"><h2>Fases (jogo)</h2>
+    <p class="muted">São ${TOTAL_PHASES} fases, da soma à trigonometria. Acerte <b>${STREAK_TARGET} seguidas</b> para passar de fase. Se errar, a sequência volta a zero, mas você nunca perde a fase conquistada.</p>
+    <form id="lf" class="row"><label class="f" style="flex:2 1 220px">Seu nome ou apelido<input id="ln" maxlength="24" placeholder="Ex.: Pedro" autocomplete="off"></label><button class="primary">Entrar e jogar</button></form>
+    <p class="muted" style="font-size:13px">O progresso fica salvo neste navegador.</p>
+    ${all.length ? `<h3 style="margin-top:18px">Jogadores salvos</h3><div class="chips">${all.map(p => `<button class="chip" data-n="${esc(p.nickname)}">${esc(p.nickname)} · fase ${p.phase}${p.completed ? " 🏆" : ""}</button>`).join("")}</div>` : ""}
+    <div id="lo"></div></div>`;
+  const enter = name => {
+    name = name.trim().replace(/\s+/g, " ");
+    if (name.length < 2) return showResult(app.querySelector("#lo"), { error: "O nome precisa ter pelo menos 2 letras." });
+    const key = name.toLowerCase();
+    let p = getPlayers()[key];
+    if (!p) { p = { nickname: name, phase: 1, streak: 0, checkpoint: 1, completed: false, total_correct: 0, total_wrong: 0 }; savePlayer(p); }
+    store(CURRENT_KEY, key); pages.fases();
+  };
+  app.querySelector("#lf").addEventListener("submit", e => { e.preventDefault(); enter(app.querySelector("#ln").value); });
+  app.querySelectorAll("[data-n]").forEach(b => b.onclick = () => enter(b.dataset.n));
+}
+
+function phaseGame(player) {
+  const cfg = store("mathsolver_cfg_" + player.nickname.toLowerCase()) || { phase: player.phase, diff: "padrao", topics: [] };
+  if (cfg.phase > player.phase) cfg.phase = player.phase;
+  const saveCfg = () => store("mathsolver_cfg_" + player.nickname.toLowerCase(), cfg);
+  let streak = 0; // sequência da sessão na fase escolhida
+  if (cfg.phase === player.phase) streak = player.streak;
+
+  app.innerHTML = `<div class="card">
+    <div class="row" style="justify-content:space-between;align-items:center"><div><h2 style="margin:0">Olá, ${esc(player.nickname)}!</h2><div class="muted" id="gl"></div></div>
+      <div class="row"><button id="pers">⚙ Personalizar</button><button id="sair">Trocar jogador</button></div></div>
+    <div id="perspanel" hidden style="margin-top:16px"></div>
+    <div class="stats" id="gs"></div>
+    <div class="bar"><div id="gb"></div></div>
+    <div id="gx" style="margin-top:10px"></div></div>
+    <div class="card"><h3>Mapa de fases</h3><div class="phases" id="gm"></div></div>`;
+
+  const updateHeader = () => {
+    const spec = CURRICULUM[cfg.phase - 1];
+    const custom = cfg.diff !== "padrao" || cfg.topics.length;
+    app.querySelector("#gl").innerHTML = player.completed && cfg.phase === TOTAL_PHASES
+      ? "🏆 Você concluiu as 50 fases! Continue treinando à vontade."
+      : `Fase ${cfg.phase} de ${TOTAL_PHASES}: <b>${phaseLabel(cfg.phase)}</b>${custom ? ` <span class="chip" style="padding:1px 8px">personalizado</span>` : ""}`;
+    app.querySelector("#gs").innerHTML = `
+      <div class="stat"><b>${player.phase}</b><span>Fase liberada</span></div>
+      <div class="stat"><b>${streak}/${STREAK_TARGET}</b><span>Sequência</span></div>
+      <div class="stat"><b class="ok">${player.total_correct}</b><span>Acertos</span></div>
+      <div class="stat"><b class="bad">${player.total_wrong}</b><span>Erros</span></div>`;
+    app.querySelector("#gb").style.width = (streak / STREAK_TARGET * 100) + "%";
+    app.querySelector("#gm").innerHTML = CURRICULUM.map(s =>
+      `<div class="ph ${s.phase < player.phase || player.completed ? "done" : ""} ${s.phase === cfg.phase ? "cur" : ""}" title="${esc(phaseLabel(s.phase))}">${s.phase}</div>`).join("");
+  };
+
+  const nextExercise = () => {
+    const spec = CURRICULUM[cfg.phase - 1];
+    const topic = cfg.topics.length ? pick(cfg.topics) : spec.topic;
+    let d = spec.difficulty;
+    if (cfg.diff === "facil") d = randInt(1, 2);
+    else if (cfg.diff === "medio") d = 3;
+    else if (cfg.diff === "dificil") d = randInt(4, 5);
+    return generate(topic, Math.min(d, TOPICS[topic].max));
+  };
+
+  const box = exerciseBox(app.querySelector("#gx"), nextExercise, correct => {
+    let msg = "";
+    if (correct) {
+      player.total_correct++; streak++;
+      if (streak >= STREAK_TARGET) {
+        streak = 0;
+        if (cfg.phase === player.phase) {
+          if (player.phase < TOTAL_PHASES) { player.phase++; player.checkpoint = player.phase; cfg.phase = player.phase; msg = `<p class="ok"><b>🎉 Fase concluída! Você liberou a fase ${player.phase}: ${phaseLabel(player.phase)}.</b></p>`; }
+          else { player.completed = true; msg = `<p class="ok"><b>🏆 Parabéns! Você completou todas as ${TOTAL_PHASES} fases!</b></p>`; }
+        } else { msg = `<p class="ok"><b>✔ Fase ${cfg.phase} revisada com sucesso!</b></p>`; }
+        saveCfg();
+      }
+    } else {
+      player.total_wrong++;
+      msg = streak > 0 ? `<p class="muted">A sequência voltou a zero, mas sua fase está garantida.</p>` : "";
+      streak = 0;
+    }
+    if (cfg.phase === player.phase) player.streak = streak;
+    savePlayer(player); updateHeader();
+    return msg;
+  });
+
+  /* Painel Personalizar */
+  const panel = app.querySelector("#perspanel");
+  app.querySelector("#pers").onclick = () => {
+    if (!panel.hidden) { panel.hidden = true; return; }
+    panel.hidden = false;
+    panel.innerHTML = `<div class="result" style="border-color:var(--accent)">
+      <h3>Personalizar</h3>
+      <div class="row"><label class="f">Fase (só as liberadas)<select id="pf">${CURRICULUM.filter(s => s.phase <= player.phase).map(s => `<option value="${s.phase}" ${s.phase === cfg.phase ? "selected" : ""}>${s.phase}. ${esc(phaseLabel(s.phase))}</option>`).join("")}</select></label>
+      <label class="f">Dificuldade<select id="pd">
+        <option value="padrao">Padrão da fase</option><option value="facil">Fácil (níveis 1–2)</option><option value="medio">Médio (nível 3)</option><option value="dificil">Difícil (níveis 4–5)</option></select></label></div>
+      <p class="muted" style="margin:14px 0 6px;font-size:13px">Temas / fórmulas (nenhum marcado = tema da fase)</p>
+      <div class="row" style="margin-bottom:8px"><button type="button" id="pall">Selecionar todos</button><button type="button" id="pnone">Limpar</button></div>
+      <div class="chkgrid">${Object.entries(TOPICS).map(([k, t]) => `<label class="chk"><input type="checkbox" value="${k}" ${cfg.topics.includes(k) ? "checked" : ""}>${t.label}</label>`).join("")}</div>
+      <div class="row" style="margin-top:14px"><button class="primary" id="papply">Aplicar</button></div>
+      <p class="muted" style="font-size:13px">A dificuldade é limitada ao máximo de cada tema. O progresso continua valendo: ${STREAK_TARGET} acertos seguidos na sua fase mais alta liberam a próxima.</p></div>`;
+    panel.querySelector("#pd").value = cfg.diff;
+    const boxes = [...panel.querySelectorAll(".chk input")];
+    panel.querySelector("#pall").onclick = () => boxes.forEach(b => b.checked = true);
+    panel.querySelector("#pnone").onclick = () => boxes.forEach(b => b.checked = false);
+    panel.querySelector("#papply").onclick = () => {
+      const newPhase = Number(panel.querySelector("#pf").value);
+      if (newPhase !== cfg.phase) streak = newPhase === player.phase ? player.streak : 0;
+      cfg.phase = newPhase; cfg.diff = panel.querySelector("#pd").value;
+      cfg.topics = boxes.filter(b => b.checked).map(b => b.value);
+      saveCfg(); panel.hidden = true; updateHeader(); box.reload();
+    };
+  };
+  app.querySelector("#sair").onclick = () => { store(CURRENT_KEY, null); pages.fases(); };
+  updateHeader();
+}
+
+/* ---------- Treinamento ---------- */
+pages.treinamento = () => {
+  app.innerHTML = `<div class="card"><h2>Treinamento</h2><p class="muted">Escolha um tema e um nível. Sem pontuação: tentativas ilimitadas.</p>
+    <div class="row"><label class="f">Tema<select id="tt">${Object.entries(TOPICS).map(([k,t]) => `<option value="${k}">${t.label}</option>`).join("")}</select></label>
+    <label class="f">Nível<select id="td"></select></label></div>
+    <div class="stats"><div class="stat"><b class="ok" id="tc">0</b><span>Acertos</span></div><div class="stat"><b class="bad" id="te">0</b><span>Erros</span></div></div>
+    <div id="tx"></div></div>`;
+  const tt = app.querySelector("#tt"), td = app.querySelector("#td");
+  let c = 0, e = 0;
+  const fillLevels = () => { td.innerHTML = Array.from({length: TOPICS[tt.value].max}, (_, i) => `<option value="${i+1}">Nível ${i+1}</option>`).join(""); };
+  fillLevels();
+  const box = exerciseBox(app.querySelector("#tx"), () => generate(tt.value, Number(td.value)), ok => {
+    ok ? c++ : e++; app.querySelector("#tc").textContent = c; app.querySelector("#te").textContent = e; return "";
+  });
+  tt.onchange = () => { fillLevels(); box.reload(); };
+  td.onchange = () => box.reload();
+};
+
+/* ---------- Exercícios (mistos) ---------- */
+pages.exercicios = () => {
+  app.innerHTML = `<div class="card"><h2>Exercícios</h2><p class="muted">Problemas aleatórios de todos os temas, com correção imediata e resolução.</p>
+    <div class="row"><label class="f">Nível geral<select id="ed"><option value="1">Iniciante</option><option value="2" selected>Básico</option><option value="3">Intermediário</option><option value="4">Avançado</option><option value="5">Desafio</option></select></label></div>
+    <div class="stats"><div class="stat"><b id="eq">0</b><span>Respondidas</span></div><div class="stat"><b class="ok" id="ec">0</b><span>Acertos</span></div><div class="stat"><b id="ep">0%</b><span>Aproveitamento</span></div></div>
+    <div id="ex"></div></div>`;
+  let q = 0, c = 0;
+  const ed = app.querySelector("#ed");
+  const box = exerciseBox(app.querySelector("#ex"), () => { const t = pick(Object.keys(TOPICS)); return generate(t, Math.min(Number(ed.value), TOPICS[t].max)); }, ok => {
+    q++; if (ok) c++;
+    app.querySelector("#eq").textContent = q; app.querySelector("#ec").textContent = c;
+    app.querySelector("#ep").textContent = Math.round(c / q * 100) + "%"; return "";
+  });
+  ed.onchange = () => box.reload();
+};
+
+/* ---------- Potências e raízes ---------- */
+function simplifyRoot(n) {
+  let out = 1, inside = n;
+  for (let k = Math.floor(Math.sqrt(n)); k > 1; k--) if (n % (k * k) === 0) { out = k; inside = n / (k * k); break; }
+  return { out, inside };
+}
+pages.potencias = () => multiTool("Potências e raízes", "Calcule potências, raízes de qualquer índice e simplifique radicais.", {
+  pot: { label: "Potência aⁿ", fields: [["a","Base (a)","2"],["n","Expoente (n)","5"]], calc: ({a, n}) => {
+    const r = a ** n; if (isNaN(r)) throw new Error("Base negativa com expoente fracionário não tem resultado real.");
+    const steps = [];
+    if (n === 0) steps.push(a === 0 ? "0⁰ é indeterminado; por convenção vale 1." : "Todo número (diferente de zero) elevado a 0 é igual a 1.");
+    else if (isInt(n) && n > 0 && n <= 12) steps.push(`${Array(n).fill(fmt(a)).join(" × ")} = ${fmt(r)}`);
+    else if (isInt(n) && n < 0) { if (a === 0) throw new Error("Zero elevado a expoente negativo não existe."); steps.push(`Expoente negativo inverte a base: ${fmt(a)}^${n} = 1 / ${fmt(a)}^${-n} = 1 / ${fmt(a ** -n)}.`, `= ${fmt(r)}`); }
+    else if (!isInt(n)) steps.push(`Expoente fracionário: a^(p/q) = raiz q-ésima de a^p.`, `${fmt(a)}^${fmt(n)} ≈ ${fmt(r)}`);
+    else steps.push(`${fmt(a)} multiplicado por ele mesmo ${n} vezes = ${fmt(r)}`);
+    return { result: fmt(r), formula: "aⁿ = a × a × … × a (n vezes)", steps };
+  }},
+  raiz: { label: "Raiz ⁿ√x", fields: [["x","Radicando (x)","64"],["n","Índice (n)","3"]], calc: ({x, n}) => {
+    if (n === 0) throw new Error("O índice não pode ser zero.");
+    let r;
+    if (x < 0) { if (isInt(n) && Math.abs(n) % 2 === 1) r = -(Math.abs(x) ** (1 / n)); else throw new Error("Raiz de índice par de número negativo não existe nos reais."); }
+    else r = x ** (1 / n);
+    const rr = Math.round(r);
+    const exact = Math.abs(rr ** n - x) < 1e-9;
+    return { result: fmt(exact ? rr : r), formula: "ⁿ√x = b ⟺ bⁿ = x",
+      steps: [`Procuramos b tal que b^${fmt(n)} = ${fmt(x)}.`, exact ? `${rr}^${fmt(n)} = ${fmt(x)}, logo a raiz é exata: ${rr}.` : `A raiz não é exata: ≈ ${fmt(r)}.`] };
+  }},
+  simp: { label: "Simplificar √n", fields: [["n","Número (inteiro positivo)","72"]], calc: ({n}) => {
+    if (!isInt(n) || n <= 0) throw new Error("Use um inteiro positivo.");
+    const { out, inside } = simplifyRoot(n);
+    const res = inside === 1 ? `${out}` : out === 1 ? `√${n}` : `${out}√${inside}`;
+    return { result: res, formula: "√(a² · b) = a√b",
+      steps: out === 1 ? [`${n} não tem fator quadrado perfeito maior que 1, então √${n} já está simplificada (≈ ${fmt(Math.sqrt(n))}).`]
+        : [`Maior quadrado perfeito que divide ${n}: ${out * out} = ${out}².`, `${n} = ${out * out} × ${inside}.`, `√${n} = √${out * out} × √${inside} = ${res}.`] };
+  }},
+});
+
+/* ---------- Porcentagem ---------- */
+pages.porcentagem = () => multiTool("Porcentagem", "Cálculos de porcentagem do dia a dia.", {
+  de: { label: "x% de y", fields: [["x","Porcentagem (%)","15"],["y","Valor","200"]], calc: ({x, y}) => ({ result: fmt(x / 100 * y), formula: "x% de y = (x ÷ 100) × y", steps: [`${fmt(x)}% = ${fmt(x)} ÷ 100 = ${fmt(x / 100)}.`, `${fmt(x / 100)} × ${fmt(y)} = ${fmt(x / 100 * y)}.`] }) },
+  aum: { label: "Aumento", fields: [["v","Valor inicial","80"],["x","Aumento (%)","25"]], calc: ({v, x}) => ({ result: fmt(v * (1 + x / 100)), formula: "final = valor × (1 + x/100)", steps: [`Aumento: ${fmt(x)}% de ${fmt(v)} = ${fmt(v * x / 100)}.`, `Final: ${fmt(v)} + ${fmt(v * x / 100)} = ${fmt(v * (1 + x / 100))}.`] }) },
+  desc: { label: "Desconto", fields: [["v","Valor inicial","150"],["x","Desconto (%)","20"]], calc: ({v, x}) => ({ result: fmt(v * (1 - x / 100)), formula: "final = valor × (1 − x/100)", steps: [`Desconto: ${fmt(x)}% de ${fmt(v)} = ${fmt(v * x / 100)}.`, `Final: ${fmt(v)} − ${fmt(v * x / 100)} = ${fmt(v * (1 - x / 100))}.`] }) },
+  quanto: { label: "a é quantos % de b", fields: [["a","Parte (a)","30"],["b","Total (b)","120"]], calc: ({a, b}) => { if (b === 0) throw new Error("O total não pode ser zero."); return { result: fmt(a / b * 100) + "%", formula: "% = (a ÷ b) × 100", steps: [`${fmt(a)} ÷ ${fmt(b)} = ${fmt(a / b)}.`, `${fmt(a / b)} × 100 = ${fmt(a / b * 100)}%.`] }; } },
+  var: { label: "Variação %", fields: [["a","Valor antigo","50"],["b","Valor novo","65"]], calc: ({a, b}) => { if (a === 0) throw new Error("O valor antigo não pode ser zero."); const v = (b - a) / a * 100; return { result: (v > 0 ? "+" : "") + fmt(v) + "%", formula: "variação = (novo − antigo) ÷ antigo × 100", steps: [`Diferença: ${fmt(b)} − ${fmt(a)} = ${fmt(b - a)}.`, `${fmt(b - a)} ÷ ${fmt(a)} × 100 = ${fmt(v)}% (${v >= 0 ? "aumento" : "redução"}).`] }; } },
+});
+
+/* ---------- Frações ---------- */
+pages.fracoes = () => {
+  app.innerHTML = `<div class="card"><h2>Frações</h2><p class="muted">Some, subtraia, multiplique e divida frações, com simplificação.</p>
+    <form id="ff" class="row">
+      <label class="f">Numerador 1<input name="a" inputmode="numeric" value="3"></label><label class="f">Denominador 1<input name="b" inputmode="numeric" value="4"></label>
+      <label class="f">Operação<select name="op"><option value="+">+</option><option value="-">−</option><option value="*">×</option><option value="/">÷</option></select></label>
+      <label class="f">Numerador 2<input name="c" inputmode="numeric" value="5"></label><label class="f">Denominador 2<input name="d" inputmode="numeric" value="6"></label>
+      <button class="primary">Calcular</button></form><div id="fo"></div></div>
+    <div class="card"><h3>Decimal → fração</h3><form id="df" class="row"><label class="f">Número decimal<input name="x" inputmode="decimal" value="0,375"></label><button class="primary">Converter</button></form><div id="do"></div></div>
+    <div class="card"><h3>Simplificar fração</h3><form id="sf" class="row"><label class="f">Numerador<input name="n" inputmode="numeric" value="18"></label><label class="f">Denominador<input name="d" inputmode="numeric" value="24"></label><button class="primary">Simplificar</button></form><div id="so"></div></div>`;
+  const ints = (f, names) => names.map(n => { const v = num(f.elements[n].value); if (!isInt(v)) throw new Error("Use apenas números inteiros nas frações."); return v; });
+  const mixed = s => (s.d !== 1 && Math.abs(s.n) > s.d) ? ` = ${s.n < 0 ? "−" : ""}${Math.trunc(Math.abs(s.n) / s.d)} inteiro(s) e ${Math.abs(s.n) % s.d}/${s.d}` : "";
+  app.querySelector("#ff").addEventListener("submit", e => {
+    e.preventDefault(); const out = app.querySelector("#fo");
+    try {
+      const [a, b, c, d] = ints(e.target, ["a","b","c","d"]); const op = e.target.elements.op.value;
+      if (b === 0 || d === 0) throw new Error("Denominador não pode ser zero.");
+      let n, den, steps, formula;
+      if (op === "+" || op === "-") {
+        const m = lcm(b, d); const s = op === "+" ? 1 : -1;
+        n = a * (m / b) + s * c * (m / d); den = m;
+        formula = `a/b ${op === "+" ? "+" : "−"} c/d (com denominador comum)`;
+        steps = [`MMC dos denominadores: MMC(${b}, ${d}) = ${m}.`, `${a}/${b} = ${a * m / b}/${m}  e  ${c}/${d} = ${c * m / d}/${m}.`, `${a * m / b} ${op === "+" ? "+" : "−"} ${c * m / d} = ${n} → ${n}/${m}.`];
+      } else if (op === "*") {
+        n = a * c; den = b * d; formula = "a/b × c/d = (a×c)/(b×d)";
+        steps = [`Multiplica numerador com numerador: ${a} × ${c} = ${n}.`, `Denominador com denominador: ${b} × ${d} = ${den}.`];
+      } else {
+        if (c === 0) throw new Error("Não dá para dividir por zero.");
+        n = a * d; den = b * c; formula = "a/b ÷ c/d = a/b × d/c";
+        steps = [`Dividir é multiplicar pelo inverso: ${a}/${b} × ${d}/${c}.`, `(${a} × ${d}) / (${b} × ${c}) = ${n}/${den}.`];
+      }
+      const s = simplify(n, den);
+      if (s.g > 1) steps.push(`Simplificamos dividindo por ${s.g}: ${fracStr(s)}.`);
+      steps.push(`Em decimal: ${fmt(s.n / s.d)}.`);
+      showResult(out, { result: fracStr(s) + mixed(s), formula, steps });
+    } catch (err) { showResult(out, { error: err.message }); }
+  });
+  app.querySelector("#df").addEventListener("submit", e => {
+    e.preventDefault(); const out = app.querySelector("#do"), x = num(e.target.elements.x.value);
+    if (isNaN(x)) return showResult(out, { error: "Digite um número decimal." });
+    const s0 = String(x), dec = s0.includes(".") ? s0.split(".")[1].length : 0, f = decimalToFraction(x);
+    showResult(out, { result: fracStr(f), formula: "decimal = número sem vírgula / 10^(casas)", steps: [`${fmt(x)} tem ${dec} casa(s) decimal(is): ${Math.round(x * 10 ** dec)}/${10 ** dec}.`, `Simplificando: ${fracStr(f)}.`] });
+  });
+  app.querySelector("#sf").addEventListener("submit", e => {
+    e.preventDefault(); const out = app.querySelector("#so");
+    try { const [n, d] = ints(e.target, ["n","d"]); const s = simplify(n, d);
+      showResult(out, { result: fracStr(s), formula: "divide numerador e denominador pelo MDC", steps: [`MDC(${Math.abs(n)}, ${Math.abs(d)}) = ${s.g}.`, `${n} ÷ ${s.g} = ${s.n}  e  ${d} ÷ ${s.g} = ${Math.abs(s.d)}.`] });
+    } catch (err) { showResult(out, { error: err.message }); }
+  });
+};
+
+/* ---------- MDC e MMC ---------- */
+function factorize(n) { const f = {}; let d = 2; while (n > 1 && d * d <= n) { while (n % d === 0) { f[d] = (f[d] || 0) + 1; n /= d; } d++; } if (n > 1) f[n] = (f[n] || 0) + 1; return f; }
+const factStr = f => Object.entries(f).map(([p, e]) => e > 1 ? `${p}<sup>${e}</sup>` : p).join(" × ") || "1";
+pages.mdcmmc = () => {
+  app.innerHTML = `<div class="card"><h2>MDC e MMC</h2><p class="muted">Digite dois ou mais números inteiros positivos, separados por vírgula ou espaço.</p>
+    <form id="mf" class="row"><label class="f" style="flex:3 1 240px">Números<input id="mn" value="12, 18, 30" autocomplete="off"></label><button class="primary">Calcular</button></form><div id="mo"></div></div>`;
+  app.querySelector("#mf").addEventListener("submit", e => {
+    e.preventDefault(); const out = app.querySelector("#mo");
+    const ns = app.querySelector("#mn").value.split(/[\s,;]+/).filter(Boolean).map(Number);
+    if (ns.length < 2 || ns.some(n => !isInt(n) || n <= 0 || n > 1e9)) return showResult(out, { error: "Use pelo menos dois inteiros positivos." });
+    const g = ns.reduce(gcd), m = ns.reduce(lcm);
+    const steps = ns.map(n => `${n} = ${factStr(factorize(n))}`);
+    steps.push(`MDC: fatores comuns com o <b>menor</b> expoente → ${factStr(factorize(g))} = <b>${g}</b>.`);
+    steps.push(`MMC: todos os fatores com o <b>maior</b> expoente → ${factStr(factorize(m))} = <b>${m}</b>.`);
+    showResult(out, { result: `MDC = ${g} &nbsp;·&nbsp; MMC = ${m}`, formula: "decomposição em fatores primos", steps });
+  });
+};
+
+/* ---------- Números inteiros ---------- */
+pages.inteiros = () => {
+  app.innerHTML = `<div class="card"><h2>Números inteiros</h2><p class="muted">Operações com sinais e as regras explicadas.</p>
+    <form id="if" class="row"><label class="f">a<input name="a" inputmode="numeric" value="-8"></label>
+    <label class="f">Operação<select name="op"><option value="+">+</option><option value="-">−</option><option value="*">×</option><option value="/">÷</option></select></label>
+    <label class="f">b<input name="b" inputmode="numeric" value="5"></label><button class="primary">Calcular</button></form><div id="io"></div></div>
+    <div class="card"><h3>Regras de sinais</h3><div class="fl">
+      <span>Adição, sinais iguais</span><code>soma e mantém o sinal</code>
+      <span>Adição, sinais diferentes</span><code>subtrai e fica o sinal do maior</code>
+      <span>Subtração</span><code>a − b = a + (−b)</code>
+      <span>Multiplicação/divisão</span><code>(+)(+)=+ (−)(−)=+ (+)(−)=−</code></div></div>`;
+  app.querySelector("#if").addEventListener("submit", e => {
+    e.preventDefault(); const out = app.querySelector("#io"), a = num(e.target.elements.a.value), b = num(e.target.elements.b.value), op = e.target.elements.op.value;
+    if (isNaN(a) || isNaN(b)) return showResult(out, { error: "Digite dois números." });
+    const bt = b < 0 ? `(${fmt(b)})` : fmt(b);
+    const rule = (x, y) => Math.sign(x) === Math.sign(y) || x === 0 || y === 0 ? "Sinais iguais: somamos os valores absolutos e mantemos o sinal." : "Sinais diferentes: subtraímos os valores absolutos e fica o sinal do maior em valor absoluto.";
+    let r, steps;
+    if (op === "+") { r = a + b; steps = [rule(a, b), `${fmt(a)} + ${bt} = ${fmt(r)}`]; }
+    else if (op === "-") { r = a - b; steps = [`Subtrair é somar o oposto: ${fmt(a)} − ${bt} = ${fmt(a)} + (${fmt(-b)}).`, rule(a, -b), `Resultado: ${fmt(r)}`]; }
+    else {
+      if (op === "/" && b === 0) return showResult(out, { error: "Divisão por zero não existe." });
+      r = op === "*" ? a * b : a / b;
+      steps = [`Sinais ${Math.sign(a) * Math.sign(b) >= 0 ? "iguais → resultado positivo" : "diferentes → resultado negativo"}.`, `${fmt(Math.abs(a))} ${op === "*" ? "×" : "÷"} ${fmt(Math.abs(b))} = ${fmt(Math.abs(r))}.`, `Resultado: ${fmt(r)}`];
+    }
+    showResult(out, { result: fmt(r), steps });
+  });
+};
+
+/* ---------- Álgebra ---------- */
+pages.algebra = () => multiTool("Álgebra", "Equações do 1º grau, do 2º grau (Bhaskara) e sistemas 2×2.", {
+  lin: { label: "1º grau: ax + b = c", fields: [["a","a","3"],["b","b","5"],["c","c","20"]], calc: ({a, b, c}) => {
+    if (a === 0) return { result: b === c ? "Infinitas soluções" : "Sem solução", steps: [`Com a = 0 a equação vira ${fmt(b)} = ${fmt(c)}, que é ${b === c ? "sempre verdadeira" : "falsa"}.`] };
+    const x = (c - b) / a;
+    return { result: `x = ${fmt(x)}`, formula: "x = (c − b) ÷ a", steps: [`${fmt(a)}x = ${fmt(c)} − (${fmt(b)}) = ${fmt(c - b)}.`, `x = ${fmt(c - b)} ÷ ${fmt(a)} = ${fmt(x)}.`, `Verificação: ${fmt(a)} × ${fmt(x)} + ${fmt(b)} = ${fmt(a * x + b)} ✔`] };
+  }},
+  quad: { label: "2º grau: ax² + bx + c = 0", fields: [["a","a","1"],["b","b","-5"],["c","c","6"]], calc: ({a, b, c}) => {
+    if (a === 0) throw new Error("Com a = 0 não é equação do 2º grau. Use a aba de 1º grau.");
+    const D = b * b - 4 * a * c;
+    const steps = [`Δ = b² − 4ac = (${fmt(b)})² − 4 × ${fmt(a)} × ${fmt(c)} = ${fmt(D)}.`];
+    const xv = -b / (2 * a), yv = -D / (4 * a);
+    if (D < 0) { steps.push("Δ < 0: não existem raízes reais."); steps.push(`Raízes complexas: x = ${fmt(xv)} ± ${fmt(Math.sqrt(-D) / (2 * Math.abs(a)))}i.`); steps.push(`Vértice da parábola: (${fmt(xv)}, ${fmt(yv)}).`); return { result: "Sem raízes reais", formula: "x = (−b ± √Δ) / 2a", steps }; }
+    const x1 = (-b + Math.sqrt(D)) / (2 * a), x2 = (-b - Math.sqrt(D)) / (2 * a);
+    steps.push(`√Δ = ${fmt(Math.sqrt(D))}.`);
+    steps.push(D === 0 ? `Δ = 0: uma raiz dupla, x = −b / 2a = ${fmt(x1)}.` : `x₁ = (${fmt(-b)} + ${fmt(Math.sqrt(D))}) / ${fmt(2 * a)} = ${fmt(x1)};  x₂ = (${fmt(-b)} − ${fmt(Math.sqrt(D))}) / ${fmt(2 * a)} = ${fmt(x2)}.`);
+    steps.push(`Soma das raízes = −b/a = ${fmt(-b / a)}; produto = c/a = ${fmt(c / a)}.`);
+    steps.push(`Vértice da parábola: (${fmt(xv)}, ${fmt(yv)}).`);
+    return { result: D === 0 ? `x = ${fmt(x1)}` : `x₁ = ${fmt(x1)} · x₂ = ${fmt(x2)}`, formula: "x = (−b ± √Δ) / 2a", steps };
+  }},
+  sis: { label: "Sistema 2×2", fields: [["a1","a₁ (x)","2"],["b1","b₁ (y)","3"],["c1","= c₁","13"],["a2","a₂ (x)","1"],["b2","b₂ (y)","-1"],["c2","= c₂","-1"]], calc: ({a1, b1, c1, a2, b2, c2}) => {
+    const D = a1 * b2 - a2 * b1, Dx = c1 * b2 - c2 * b1, Dy = a1 * c2 - a2 * c1;
+    const steps = [`Sistema: ${fmt(a1)}x ${b1<0?"−":"+"} ${fmt(Math.abs(b1))}y = ${fmt(c1)} e ${fmt(a2)}x ${b2<0?"−":"+"} ${fmt(Math.abs(b2))}y = ${fmt(c2)}.`, `D = a₁b₂ − a₂b₁ = ${fmt(D)}; Dx = ${fmt(Dx)}; Dy = ${fmt(Dy)}.`];
+    if (D === 0) return { result: Dx === 0 && Dy === 0 ? "Infinitas soluções (SPI)" : "Sem solução (SI)", formula: "Regra de Cramer", steps: [...steps, "D = 0: as retas são paralelas ou coincidentes."] };
+    steps.push(`x = Dx / D = ${fmt(Dx / D)};  y = Dy / D = ${fmt(Dy / D)}.`);
+    return { result: `x = ${fmt(Dx / D)} · y = ${fmt(Dy / D)}`, formula: "x = Dx/D, y = Dy/D (Cramer)", steps };
+  }},
+});
+
+/* ---------- Geometria plana ---------- */
+const P = n => { if (n <= 0) throw new Error("As medidas precisam ser positivas."); return n; };
+pages.geoplana = () => multiTool("Geometria plana", "Áreas, perímetros e Teorema de Pitágoras.", {
+  quad: { label: "Quadrado", fields: [["l","Lado","5"]], calc: ({l}) => (P(l), { result: `A = ${fmt(l * l)} · P = ${fmt(4 * l)}`, formula: "A = l² · P = 4l", steps: [`Área: ${fmt(l)}² = ${fmt(l * l)}.`, `Perímetro: 4 × ${fmt(l)} = ${fmt(4 * l)}.`, `Diagonal: l√2 ≈ ${fmt(l * Math.SQRT2)}.`] }) },
+  ret: { label: "Retângulo", fields: [["b","Base","8"],["h","Altura","3"]], calc: ({b, h}) => (P(b), P(h), { result: `A = ${fmt(b * h)} · P = ${fmt(2 * (b + h))}`, formula: "A = b × h · P = 2(b + h)", steps: [`Área: ${fmt(b)} × ${fmt(h)} = ${fmt(b * h)}.`, `Perímetro: 2 × (${fmt(b)} + ${fmt(h)}) = ${fmt(2 * (b + h))}.`, `Diagonal: √(b² + h²) ≈ ${fmt(Math.hypot(b, h))}.`] }) },
+  tri: { label: "Triângulo (base e altura)", fields: [["b","Base","10"],["h","Altura","6"]], calc: ({b, h}) => (P(b), P(h), { result: `A = ${fmt(b * h / 2)}`, formula: "A = (b × h) ÷ 2", steps: [`${fmt(b)} × ${fmt(h)} = ${fmt(b * h)}.`, `${fmt(b * h)} ÷ 2 = ${fmt(b * h / 2)}.`] }) },
+  heron: { label: "Triângulo (3 lados)", fields: [["a","Lado a","5"],["b","Lado b","6"],["c","Lado c","7"]], calc: ({a, b, c}) => {
+    P(a); P(b); P(c);
+    if (a + b <= c || a + c <= b || b + c <= a) throw new Error("Esses lados não formam um triângulo (cada lado deve ser menor que a soma dos outros dois).");
+    const s = (a + b + c) / 2, A = Math.sqrt(s * (s - a) * (s - b) * (s - c));
+    return { result: `A = ${fmt(A)} · P = ${fmt(a + b + c)}`, formula: "Heron: A = √(s(s−a)(s−b)(s−c))", steps: [`Semiperímetro s = (${fmt(a)} + ${fmt(b)} + ${fmt(c)}) ÷ 2 = ${fmt(s)}.`, `A = √(${fmt(s)} × ${fmt(s - a)} × ${fmt(s - b)} × ${fmt(s - c)}) = ${fmt(A)}.`] };
+  }},
+  circ: { label: "Círculo", fields: [["r","Raio","4"]], calc: ({r}) => (P(r), { result: `A ≈ ${fmt(Math.PI * r * r)} · C ≈ ${fmt(2 * Math.PI * r)}`, formula: "A = πr² · C = 2πr", steps: [`Área: π × ${fmt(r)}² = ${fmt(r * r)}π ≈ ${fmt(Math.PI * r * r)}.`, `Comprimento: 2 × π × ${fmt(r)} = ${fmt(2 * r)}π ≈ ${fmt(2 * Math.PI * r)}.`, `Diâmetro: 2r = ${fmt(2 * r)}.`] }) },
+  trap: { label: "Trapézio", fields: [["B","Base maior","10"],["b","Base menor","6"],["h","Altura","4"]], calc: ({B, b, h}) => (P(B), P(b), P(h), { result: `A = ${fmt((B + b) * h / 2)}`, formula: "A = (B + b) × h ÷ 2", steps: [`(${fmt(B)} + ${fmt(b)}) = ${fmt(B + b)}.`, `${fmt(B + b)} × ${fmt(h)} ÷ 2 = ${fmt((B + b) * h / 2)}.`] }) },
+  los: { label: "Losango", fields: [["D","Diagonal maior","8"],["d","Diagonal menor","6"]], calc: ({D, d}) => (P(D), P(d), { result: `A = ${fmt(D * d / 2)} · P = ${fmt(4 * Math.hypot(D / 2, d / 2))}`, formula: "A = (D × d) ÷ 2", steps: [`${fmt(D)} × ${fmt(d)} ÷ 2 = ${fmt(D * d / 2)}.`, `Lado = √((D/2)² + (d/2)²) = ${fmt(Math.hypot(D / 2, d / 2))}.`] }) },
+  pit: { label: "Pitágoras (hipotenusa)", fields: [["b","Cateto b","3"],["c","Cateto c","4"]], calc: ({b, c}) => (P(b), P(c), { result: `a = ${fmt(Math.hypot(b, c))}`, formula: "a² = b² + c²", steps: [`a² = ${fmt(b)}² + ${fmt(c)}² = ${fmt(b * b)} + ${fmt(c * c)} = ${fmt(b * b + c * c)}.`, `a = √${fmt(b * b + c * c)} = ${fmt(Math.hypot(b, c))}.`] }) },
+  pitc: { label: "Pitágoras (cateto)", fields: [["a","Hipotenusa a","13"],["b","Cateto conhecido","5"]], calc: ({a, b}) => { P(a); P(b); if (b >= a) throw new Error("O cateto precisa ser menor que a hipotenusa."); const c = Math.sqrt(a * a - b * b); return { result: `c = ${fmt(c)}`, formula: "c² = a² − b²", steps: [`c² = ${fmt(a)}² − ${fmt(b)}² = ${fmt(a * a)} − ${fmt(b * b)} = ${fmt(a * a - b * b)}.`, `c = √${fmt(a * a - b * b)} = ${fmt(c)}.`] }; } },
+  pol: { label: "Polígono regular", fields: [["n","Nº de lados","6"],["l","Lado","4"]], calc: ({n, l}) => {
+    if (!isInt(n) || n < 3) throw new Error("Um polígono tem pelo menos 3 lados (número inteiro)."); P(l);
+    const ap = l / (2 * Math.tan(Math.PI / n)), A = n * l * ap / 2, Si = (n - 2) * 180;
+    return { result: `A ≈ ${fmt(A)} · P = ${fmt(n * l)}`, formula: "A = (P × apótema) ÷ 2", steps: [`Soma dos ângulos internos: (n − 2) × 180° = ${Si}°; cada ângulo: ${fmt(Si / n)}°.`, `Apótema = l ÷ (2·tan(180°/n)) ≈ ${fmt(ap)}.`, `A = (${fmt(n * l)} × ${fmt(ap)}) ÷ 2 ≈ ${fmt(A)}.`, `Diagonais: n(n − 3)/2 = ${n * (n - 3) / 2}.`] };
+  }},
+});
+
+/* ---------- Geometria espacial ---------- */
+pages.geoespacial = () => multiTool("Geometria espacial", "Volumes e áreas de sólidos geométricos.", {
+  cubo: { label: "Cubo", fields: [["a","Aresta","3"]], calc: ({a}) => (P(a), { result: `V = ${fmt(a ** 3)} · Aₜ = ${fmt(6 * a * a)}`, formula: "V = a³ · Aₜ = 6a²", steps: [`V = ${fmt(a)}³ = ${fmt(a ** 3)}.`, `Aₜ = 6 × ${fmt(a)}² = ${fmt(6 * a * a)}.`, `Diagonal = a√3 ≈ ${fmt(a * Math.sqrt(3))}.`] }) },
+  par: { label: "Paralelepípedo", fields: [["a","Comprimento","4"],["b","Largura","3"],["c","Altura","2"]], calc: ({a, b, c}) => (P(a), P(b), P(c), { result: `V = ${fmt(a * b * c)} · Aₜ = ${fmt(2 * (a * b + a * c + b * c))}`, formula: "V = a·b·c · Aₜ = 2(ab + ac + bc)", steps: [`V = ${fmt(a)} × ${fmt(b)} × ${fmt(c)} = ${fmt(a * b * c)}.`, `Aₜ = 2 × (${fmt(a * b)} + ${fmt(a * c)} + ${fmt(b * c)}) = ${fmt(2 * (a * b + a * c + b * c))}.`, `Diagonal = √(a² + b² + c²) ≈ ${fmt(Math.sqrt(a * a + b * b + c * c))}.`] }) },
+  cil: { label: "Cilindro", fields: [["r","Raio","2"],["h","Altura","5"]], calc: ({r, h}) => (P(r), P(h), { result: `V ≈ ${fmt(Math.PI * r * r * h)} · Aₜ ≈ ${fmt(2 * Math.PI * r * (r + h))}`, formula: "V = πr²h · Aₜ = 2πr(r + h)", steps: [`Área da base: πr² ≈ ${fmt(Math.PI * r * r)}.`, `V = área da base × altura ≈ ${fmt(Math.PI * r * r * h)}.`, `Área lateral: 2πrh ≈ ${fmt(2 * Math.PI * r * h)}; total ≈ ${fmt(2 * Math.PI * r * (r + h))}.`] }) },
+  cone: { label: "Cone", fields: [["r","Raio","3"],["h","Altura","4"]], calc: ({r, h}) => { P(r); P(h); const g = Math.hypot(r, h); return { result: `V ≈ ${fmt(Math.PI * r * r * h / 3)} · Aₜ ≈ ${fmt(Math.PI * r * (r + g))}`, formula: "V = πr²h ÷ 3 · g = √(r² + h²)", steps: [`Geratriz: g = √(${fmt(r)}² + ${fmt(h)}²) = ${fmt(g)}.`, `V = π × ${fmt(r)}² × ${fmt(h)} ÷ 3 ≈ ${fmt(Math.PI * r * r * h / 3)}.`, `Aₜ = πr(r + g) ≈ ${fmt(Math.PI * r * (r + g))}.`] }; } },
+  esf: { label: "Esfera", fields: [["r","Raio","3"]], calc: ({r}) => (P(r), { result: `V ≈ ${fmt(4 / 3 * Math.PI * r ** 3)} · A ≈ ${fmt(4 * Math.PI * r * r)}`, formula: "V = (4/3)πr³ · A = 4πr²", steps: [`V = 4/3 × π × ${fmt(r)}³ ≈ ${fmt(4 / 3 * Math.PI * r ** 3)}.`, `A = 4 × π × ${fmt(r)}² ≈ ${fmt(4 * Math.PI * r * r)}.`] }) },
+  pir: { label: "Pirâmide", fields: [["Ab","Área da base","36"],["h","Altura","10"]], calc: ({Ab, h}) => (P(Ab), P(h), { result: `V = ${fmt(Ab * h / 3)}`, formula: "V = (Ab × h) ÷ 3", steps: [`V = ${fmt(Ab)} × ${fmt(h)} ÷ 3 = ${fmt(Ab * h / 3)}.`] }) },
+  prisma: { label: "Prisma", fields: [["Ab","Área da base","12"],["h","Altura","5"]], calc: ({Ab, h}) => (P(Ab), P(h), { result: `V = ${fmt(Ab * h)}`, formula: "V = Ab × h", steps: [`V = ${fmt(Ab)} × ${fmt(h)} = ${fmt(Ab * h)}.`] }) },
+});
+
+/* ---------- Trigonometria ---------- */
+pages.trigonometria = () => multiTool("Trigonometria", "Razões trigonométricas, triângulo retângulo e leis dos senos e cossenos. Ângulos em graus.", {
+  raz: { label: "sen, cos, tan", fields: [["t","Ângulo (graus)","30"]], calc: ({t}) => {
+    const s = Math.sin(rad(t)), c = Math.cos(rad(t)), tanUndef = Math.abs(c) < 1e-12;
+    const norm = ((t % 360) + 360) % 360, nota = TRIG[norm];
+    return { result: `sen = ${fmt(s)} · cos = ${fmt(c)} · tan = ${tanUndef ? "não existe" : fmt(s / c)}`, formula: "tan θ = sen θ ÷ cos θ",
+      steps: [`${fmt(t)}° = ${fmt(rad(t))} rad.`, nota ? `Ângulo notável: sen = ${nota[0][0]}, cos = ${nota[1][0]}, tan = ${nota[2][0]}.` : "Valores aproximados (ângulo não notável).", `Confere: sen² + cos² = ${fmt(s * s + c * c)}.`] };
+  }},
+  ret: { label: "Triângulo retângulo", fields: [["t","Ângulo θ (graus)","30"],["h","Hipotenusa","10"]], calc: ({t, h}) => {
+    P(h); if (t <= 0 || t >= 90) throw new Error("O ângulo agudo deve estar entre 0° e 90°.");
+    const op = h * Math.sin(rad(t)), adj = h * Math.cos(rad(t));
+    return { result: `oposto = ${fmt(op)} · adjacente = ${fmt(adj)}`, formula: "sen θ = op/hip · cos θ = adj/hip", steps: [`Cateto oposto = hip × sen θ = ${fmt(h)} × ${fmt(Math.sin(rad(t)))} = ${fmt(op)}.`, `Cateto adjacente = hip × cos θ = ${fmt(h)} × ${fmt(Math.cos(rad(t)))} = ${fmt(adj)}.`, `Outro ângulo agudo: 90° − ${fmt(t)}° = ${fmt(90 - t)}°.`] };
+  }},
+  cos: { label: "Lei dos cossenos", fields: [["a","Lado a","5"],["b","Lado b","7"],["C","Ângulo C entre eles (graus)","60"]], calc: ({a, b, C}) => {
+    P(a); P(b); if (C <= 0 || C >= 180) throw new Error("O ângulo deve estar entre 0° e 180°.");
+    const c2 = a * a + b * b - 2 * a * b * Math.cos(rad(C));
+    return { result: `c = ${fmt(Math.sqrt(c2))}`, formula: "c² = a² + b² − 2ab·cos C", steps: [`c² = ${fmt(a)}² + ${fmt(b)}² − 2 × ${fmt(a)} × ${fmt(b)} × cos ${fmt(C)}°.`, `c² = ${fmt(a * a + b * b)} − ${fmt(2 * a * b * Math.cos(rad(C)))} = ${fmt(c2)}.`, `c = √${fmt(c2)} = ${fmt(Math.sqrt(c2))}.`] };
+  }},
+  sen: { label: "Lei dos senos", fields: [["a","Lado a","10"],["A","Ângulo A (graus)","30"],["B","Ângulo B (graus)","45"]], calc: ({a, A, B}) => {
+    P(a); if (A <= 0 || B <= 0 || A + B >= 180) throw new Error("Os ângulos devem ser positivos e somar menos de 180°.");
+    const b = a * Math.sin(rad(B)) / Math.sin(rad(A)), Cg = 180 - A - B, c = a * Math.sin(rad(Cg)) / Math.sin(rad(A));
+    return { result: `b = ${fmt(b)} · c = ${fmt(c)} · C = ${fmt(Cg)}°`, formula: "a/sen A = b/sen B = c/sen C", steps: [`C = 180° − ${fmt(A)}° − ${fmt(B)}° = ${fmt(Cg)}°.`, `b = a × sen B ÷ sen A = ${fmt(a)} × ${fmt(Math.sin(rad(B)))} ÷ ${fmt(Math.sin(rad(A)))} = ${fmt(b)}.`, `c = a × sen C ÷ sen A = ${fmt(c)}.`] };
+  }},
+  conv: { label: "Graus ↔ radianos", fields: [["g","Graus","180"]], calc: ({g}) => ({ result: `${fmt(rad(g))} rad`, formula: "rad = graus × π ÷ 180", steps: [`${fmt(g)} × π ÷ 180 = ${fmt(g / 180)}π ≈ ${fmt(rad(g))} rad.`] }) },
+  inv: { label: "Ângulo pelo seno/cos", fields: [["op","Cateto oposto","3"],["hip","Hipotenusa","6"]], calc: ({op, hip}) => {
+    P(op); P(hip); if (op >= hip) throw new Error("O cateto deve ser menor que a hipotenusa.");
+    const t = deg(Math.asin(op / hip));
+    return { result: `θ ≈ ${fmt(t)}°`, formula: "θ = arcsen(op ÷ hip)", steps: [`sen θ = ${fmt(op)} ÷ ${fmt(hip)} = ${fmt(op / hip)}.`, `θ = arcsen(${fmt(op / hip)}) ≈ ${fmt(t)}°.`] };
+  }},
+});
+
+/* ---------- Formulário ---------- */
+pages.formulario = () => {
+  const F = {
+    "Aritmética": [["Ordem das operações","( ) → ^ √ → × ÷ → + −"],["Dividendo","D = d × q + r"],["Regra de três","a/b = c/x → x = b·c/a"],["Média aritmética","(x₁ + … + xₙ) ÷ n"]],
+    "Potências e raízes": [["Produto","aᵐ · aⁿ = aᵐ⁺ⁿ"],["Quociente","aᵐ ÷ aⁿ = aᵐ⁻ⁿ"],["Potência de potência","(aᵐ)ⁿ = aᵐ·ⁿ"],["Expoente zero","a⁰ = 1 (a ≠ 0)"],["Expoente negativo","a⁻ⁿ = 1/aⁿ"],["Expoente fracionário","a^(p/q) = ᵠ√aᵖ"],["Raiz do produto","√(a·b) = √a · √b"]],
+    "Frações e porcentagem": [["Soma","a/b + c/d = (ad + cb)/bd"],["Produto","a/b · c/d = ac/bd"],["Divisão","a/b ÷ c/d = a/b · d/c"],["Porcentagem","x% de y = x·y/100"],["Aumento","V·(1 + i)"],["Desconto","V·(1 − i)"],["Juros simples","J = C·i·t"],["Juros compostos","M = C·(1 + i)ᵗ"]],
+    "MDC e MMC": [["Relação","MDC(a,b) × MMC(a,b) = a × b"],["Euclides","MDC(a,b) = MDC(b, a mod b)"]],
+    "Álgebra": [["1º grau","ax + b = 0 → x = −b/a"],["Bhaskara","x = (−b ± √Δ)/2a"],["Discriminante","Δ = b² − 4ac"],["Soma e produto","x₁+x₂ = −b/a · x₁x₂ = c/a"],["Vértice","(−b/2a, −Δ/4a)"],["Quadrado da soma","(a + b)² = a² + 2ab + b²"],["Quadrado da diferença","(a − b)² = a² − 2ab + b²"],["Produto notável","(a + b)(a − b) = a² − b²"],["PA","aₙ = a₁ + (n−1)r · Sₙ = (a₁+aₙ)n/2"],["PG","aₙ = a₁·qⁿ⁻¹ · Sₙ = a₁(qⁿ−1)/(q−1)"]],
+    "Geometria plana": [["Quadrado","A = l² · P = 4l"],["Retângulo","A = b·h"],["Triângulo","A = b·h/2"],["Heron","A = √(s(s−a)(s−b)(s−c))"],["Trapézio","A = (B + b)·h/2"],["Losango","A = D·d/2"],["Círculo","A = πr² · C = 2πr"],["Pitágoras","a² = b² + c²"],["Ângulos internos","Sᵢ = (n − 2)·180°"],["Diagonais","d = n(n − 3)/2"]],
+    "Geometria espacial": [["Cubo","V = a³ · Aₜ = 6a²"],["Paralelepípedo","V = a·b·c"],["Prisma","V = Ab·h"],["Pirâmide","V = Ab·h/3"],["Cilindro","V = πr²h · Aₜ = 2πr(r + h)"],["Cone","V = πr²h/3 · g² = r² + h²"],["Esfera","V = 4πr³/3 · A = 4πr²"],["Euler","V − A + F = 2"]],
+    "Trigonometria": [["Seno","sen θ = oposto/hipotenusa"],["Cosseno","cos θ = adjacente/hipotenusa"],["Tangente","tan θ = oposto/adjacente"],["Relação fundamental","sen²θ + cos²θ = 1"],["Lei dos senos","a/sen A = b/sen B = c/sen C"],["Lei dos cossenos","a² = b² + c² − 2bc·cos A"],["Conversão","rad = graus·π/180"],["Notáveis","sen30 = 1/2 · sen45 = √2/2 · sen60 = √3/2"]],
+    "Geometria analítica": [["Distância","d = √((x₂−x₁)² + (y₂−y₁)²)"],["Ponto médio","((x₁+x₂)/2, (y₁+y₂)/2)"],["Coef. angular","m = (y₂−y₁)/(x₂−x₁)"],["Reta","y − y₁ = m(x − x₁)"],["Circunferência","(x−a)² + (y−b)² = r²"]],
+    "Estatística e probabilidade": [["Probabilidade","P = casos favoráveis / casos possíveis"],["Permutação","Pₙ = n!"],["Arranjo","A(n,p) = n!/(n−p)!"],["Combinação","C(n,p) = n!/(p!(n−p)!)"],["Variância","σ² = Σ(x − x̄)²/n"]],
+  };
+  app.innerHTML = `<div class="card"><h2>Formulário</h2><p class="muted">Consulta rápida das principais fórmulas, do ensino fundamental ao médio.</p>
+    <input id="fs" placeholder="Buscar fórmula (ex.: área, Bhaskara, seno)" style="width:100%;margin:8px 0 14px" autocomplete="off"><div id="fl"></div></div>`;
+  const draw = q => {
+    q = q.trim().toLowerCase();
+    app.querySelector("#fl").innerHTML = Object.entries(F).map(([sec, items]) => {
+      const it = items.filter(([n, f]) => !q || (sec + n + f).toLowerCase().includes(q));
+      if (!it.length) return "";
+      return `<details ${q ? "open" : ""}><summary>${sec}</summary><div class="fl">${it.map(([n, f]) => `<span>${n}</span><code>${f}</code>`).join("")}</div></details>`;
+    }).join("") || `<p class="muted">Nenhuma fórmula encontrada.</p>`;
+  };
+  app.querySelector("#fs").oninput = e => draw(e.target.value);
+  draw("");
+};
+
+/* =====================================================================
+   ROTEAMENTO
+   ===================================================================== */
+nav.innerHTML = `<h4>TEMAS</h4>` + PAGES.map(([h, t]) => `<a href="#${h}" data-h="${h}">${t}</a>`).join("");
+document.getElementById("menuBtn").onclick = () => nav.classList.toggle("open");
+function route() {
+  const h = location.hash.slice(1) || "inicio";
+  const page = pages[h] ? h : "inicio";
+  nav.querySelectorAll("a").forEach(a => a.classList.toggle("active", a.dataset.h === page));
+  nav.classList.remove("open");
+  pages[page]();
+  window.scrollTo(0, 0);
+}
+window.addEventListener("hashchange", route);
+route();
+</script>
+</body>
 </html>

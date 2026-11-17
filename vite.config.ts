@@ -12,6 +12,9 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  optimizeDeps: {
+    exclude: ['@tanstack/react-start', '@tanstack/start-storage-context'],
+  },
   build: {
     rollupOptions: {
       input: path.resolve(__dirname, 'index.html'),
